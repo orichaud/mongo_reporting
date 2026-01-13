@@ -21,7 +21,7 @@ from requests.auth import HTTPDigestAuth
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger(__name__)
-__version__ = "1.0.0"
+__version__ = "0.1.0"
 
 
 @dataclass
