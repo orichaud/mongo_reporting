@@ -1,0 +1,91 @@
+# MongoDB Atlas Cluster Report Generator - Cursor Rules
+
+## Project Overview
+A Python CLI tool that generates reports of MongoDB Atlas clusters across all accessible projects. Single-file architecture (~540 lines) with comprehensive test coverage.
+
+## Code Style
+
+### Python
+- **Version**: Python 3.10+
+- **Formatter**: black
+- **Linter**: ruff
+- **Type hints**: Use modern syntax (`X | None` not `Optional[X]`, `list[str]` not `List[str]`)
+
+### Naming Conventions
+- Functions: `snake_case` (e.g., `api_get`, `filter_projects`)
+- Classes: `PascalCase` (e.g., `Config`)
+- Constants: `UPPER_SNAKE_CASE` (e.g., `API_BASE`, `ATLAS_PUBLIC_KEY`)
+- Short variable names OK in local scope (e.g., `c` for cluster, `p` for project, `r` for report)
+
+### Code Principles
+- Keep it simple - avoid over-engineering
+- Single file for main logic (`get_cluster_report.py`)
+- Inline small helper functions rather than creating many tiny functions
+- Use dataclasses for configuration
+- Prefer list comprehensions over explicit loops when readable
+
+## Architecture
+
+### Main Components
+- `Config` dataclass: Runtime configuration with defaults
+- `api_get()`: Single API request with retry logic
+- `api_get_all()`: Paginated API fetching
+- `filter_projects()`: Glob-based project filtering
+- `print_report()`: Table output with color highlighting
+- `export_report()`: CSV/JSON export
+- `main()`: CLI entry point
+
+### Dependencies
+- `requests`: HTTP client
+- `python-dotenv`: Environment loading
+- No other runtime dependencies
+
+## Testing
+
+### Framework
+- pytest with pytest-mock
+- Tests in `tests/test_get_cluster_report.py`
+- Mock external API calls, don't make real requests
+
+### Running Tests
+```bash
+PYTHONPATH=. python3 -m pytest -v
+```
+
+## File Structure
+```
+mongo_reporting/
+├── get_cluster_report.py    # Main script (all logic)
+├── tests/
+│   └── test_get_cluster_report.py
+├── requirements.txt         # Runtime deps
+├── requirements-dev.txt     # Dev deps (includes runtime)
+├── .env.example            # Template for credentials
+├── test_api_connection.sh  # Diagnostic script
+└── README.md
+```
+
+## Common Tasks
+
+### Adding a new CLI option
+1. Add to `Config` dataclass with default
+2. Add to `parse_args()` with help text
+3. Add validation in `validate_args()` if needed
+4. Apply in `main()` via the config loop or directly
+
+### Adding a new output column
+1. Add to `hdrs` list in `print_report()`
+2. Add extraction in the row-building loop
+3. Add to `fields` and row dict in `export_report()`
+
+### Modifying API behavior
+- All API logic is in `api_get()` and `api_get_all()`
+- Retry logic handles 429, 500, 502, 503, 504
+- Respects `Retry-After` header
+
+## Don'ts
+- Don't add unnecessary abstractions
+- Don't split into multiple source files
+- Don't add dependencies without good reason
+- Don't remove features without discussion
+- Don't use `Optional` from typing (use `X | None`)
