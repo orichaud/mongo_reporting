@@ -9,7 +9,12 @@ Generate a report of all MongoDB Atlas clusters accessible by your API key. List
 
 ## Installation
 
-1. Clone the repository or download the script.
+1. Clone the repository:
+
+    ```bash
+    git clone https://github.com/orichaud/mongo_reporting.git
+    cd mongo_reporting
+    ```
 
 2. Create and activate a virtual environment:
 
@@ -32,7 +37,13 @@ Generate a report of all MongoDB Atlas clusters accessible by your API key. List
 
 ## Configuration
 
-Create a `.env` file with your MongoDB Atlas API credentials:
+Copy the example environment file and add your MongoDB Atlas API credentials:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your credentials:
 
 ```text
 ATLAS_PUBLIC_KEY=your_public_key
@@ -72,7 +83,7 @@ python3 get_cluster_report.py [OPTIONS]
 | `--project PATTERN` | Include projects matching glob pattern (repeatable) |
 | `--exclude-project PATTERN` | Exclude projects matching glob pattern (repeatable) |
 | `--output FILE` | Export report to file (format inferred from extension) |
-| `--output-format FORMAT` | Force output format: csv or json |
+| `--output-format FORMAT` | Output format (csv/json); json without --output prints to stdout |
 
 ### Examples
 
@@ -95,8 +106,11 @@ python3 get_cluster_report.py --sort-by disk
 # Export to CSV
 python3 get_cluster_report.py --output report.csv
 
-# Quiet mode with JSON export
-python3 get_cluster_report.py -q --output report.json
+# Export to JSON file
+python3 get_cluster_report.py --output report.json
+
+# JSON to stdout (pipe to jq)
+python3 get_cluster_report.py -q --output-format json | jq '.projects | length'
 
 # Multiple project patterns
 python3 get_cluster_report.py --project "prod-*" --project "uat-*"
@@ -111,6 +125,21 @@ The script outputs:
 
 Clusters with instance size larger than the highlight threshold (default: M30) are shown in red.
 
+## Troubleshooting
+
+### Test API Connection
+
+Use the diagnostic script to verify your API credentials and network access:
+
+```bash
+./test_api_connection.sh
+```
+
+This script will:
+- Check your public IP address (must be on the Atlas API Access List)
+- Test the API connection with your credentials
+- Provide actionable error messages for common issues (401 Unauthorized, etc.)
+
 ## Running Tests
 
 ```bash
@@ -121,6 +150,10 @@ PYTHONPATH=. python3 -m pytest -v
 
 1. Fetches all projects accessible by the API key
 2. Filters projects based on include/exclude patterns
-3. Concurrently fetches clusters for each project
+3. Concurrently fetches clusters for each project (up to 20 parallel requests)
 4. Displays formatted report with sorting and highlighting
 5. Optionally exports to CSV or JSON
+
+## License
+
+MIT License - see [LICENSE](LICENSE) for details.
